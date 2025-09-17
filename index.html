@@ -18,7 +18,10 @@
 
     document.getElementById("sendBtn").addEventListener("click", () => {
       document.getElementById("status").innerText = "Obteniendo ubicación...";
- 
+      
+      console.log("navigator",navigator);
+      console.log("navigator.geolocation",navigator.geolocation);
+      
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
