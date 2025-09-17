@@ -18,12 +18,13 @@
 
     document.getElementById("sendBtn").addEventListener("click", () => {
       document.getElementById("status").innerText = "Obteniendo ubicación...";
-
+ 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
+            console.log(lat, lng);
 
             document.getElementById("status").innerText =
               `Ubicación obtenida: ${lat}, ${lng}. Guardando...`;
