@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ubicación del Estudiante</title>
+</head>
+<body>
+  <h2>Comparte tu ubicación</h2>
+  <p>Presiona "Enviar" para compartir tu ubicación actual.</p>
+
+  <button id="sendBtn">Enviar ubicación</button>
+
+  <p id="status"></p>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/TU_DEPLOY_URL/exec"; 
+    // 👆 pega aquí tu URL del Web App
+
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      document.getElementById("status").innerText = "Obteniendo ubicación...";
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            document.getElementById("status").innerText =
+              `Ubicación obtenida: ${lat}, ${lng}. Guardando...`;
+
+            fetch(scriptURL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ latitude: lat, longitude: lng })
+            })
+            .then(() => {
+              document.getElementById("status").innerText =
+                "Ubicación enviada correctamente ✅";
+            })
+            .catch((err) => {
+              console.error("Error:", err);
+              document.getElementById("status").innerText =
+                "Error al enviar ubicación ❌";
+            });
+          },
+          (error) => {
+            console.error("Geo error:", error);
+            document.getElementById("status").innerText =
+              "No se pudo obtener la ubicación: " + error.message;
+          }
+        );
+      } else {
+        document.getElementById("status").innerText =
+          "El navegador no soporta geolocalización.";
+      }
+    });
+  </script>
+</body>
+</html>
