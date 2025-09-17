@@ -1,63 +1,63 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Ubicación del Estudiante</title>
+  <title>Selecciona tu ubicación</title>
+  <meta charset="utf-8">
+  <style>
+    #map { height: 400px; width: 100%; }
+  </style>
 </head>
 <body>
-  <h2>Comparte tu ubicación</h2>
-  <p>Presiona "Enviar" para compartir tu ubicación actual.</p>
-
-  <button id="sendBtn">Enviar ubicación</button>
-
+  <h2>Selecciona tu ubicación</h2>
+  <div id="map"></div>
+  <button id="saveBtn">Guardar ubicación</button>
   <p id="status"></p>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbyrG7cdmRJ-Gw02gTfxuPBHAzMFu5MB_ZXT3jxFRreRJulVxfD3b6-31qS_2wvqWK091w/exec"; 
-    // 👆 pega aquí tu URL del Web App
+    let map, marker, selectedLat, selectedLng;
 
-    document.getElementById("sendBtn").addEventListener("click", () => {
-      document.getElementById("status").innerText = "Obteniendo ubicación...";
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 0, lng: 0 }, // centro por defecto
+        zoom: 2,
+      });
+
+      marker = new google.maps.Marker({
+        position: map.getCenter(),
+        map: map,
+        draggable: true
+      });
+
+      selectedLat = map.getCenter().lat;
+      selectedLng = map.getCenter().lng;
+
+      // Actualiza coordenadas al mover el marcador
+      marker.addListener("dragend", function() {
+        selectedLat = marker.getPosition().lat();
+        selectedLng = marker.getPosition().lng();
+      });
+
+      // Permitir hacer clic para mover el marcador
+      map.addListener("click", function(event) {
+        marker.setPosition(event.latLng);
+        selectedLat = event.latLng.lat();
+        selectedLng = event.latLng.lng();
+      });
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", function() {
+      document.getElementById("status").innerText = "Guardando ubicación...";
       
-      console.log("navigator",navigator);
-      console.log("navigator.geolocation",navigator.geolocation);
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            console.log(lat, lng);
-
-            document.getElementById("status").innerText =
-              `Ubicación obtenida: ${lat}, ${lng}. Guardando...`;
-
-            fetch(scriptURL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ latitude: lat, longitude: lng })
-            })
-            .then(() => {
-              document.getElementById("status").innerText =
-                "Ubicación enviada correctamente ✅";
-            })
-            .catch((err) => {
-              console.error("Error:", err);
-              document.getElementById("status").innerText =
-                "Error al enviar ubicación ❌";
-            });
-          },
-          (error) => {
-            console.error("Geo error:", error);
-            document.getElementById("status").innerText =
-              "No se pudo obtener la ubicación: " + error.message;
-          }
-        );
-      } else {
-        document.getElementById("status").innerText =
-          "El navegador no soporta geolocalización.";
-      }
+      // Aquí usas google.script.run si está servido desde Apps Script
+      google.script.run.withSuccessHandler(() => {
+        document.getElementById("status").innerText = "Ubicación guardada ✅";
+      }).withFailureHandler(err => {
+        document.getElementById("status").innerText = "Error al guardar ❌: " + err;
+      }).guardarUbicacion(selectedLat, selectedLng);
     });
   </script>
+
+  <!-- Incluye la API de Google Maps (requiere tu API Key) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMXGTNpTqLGRbxNXlJ7MLr7rfIv0msiZk&callback=initMap" async defer></script>
 </body>
 </html>
